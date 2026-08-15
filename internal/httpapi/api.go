@@ -66,7 +66,8 @@ func writeError(w http.ResponseWriter, err error) {
 	case errors.Is(err, notify.ErrDuplicateID),
 		errors.Is(err, notify.ErrAlreadySent),
 		errors.Is(err, notify.ErrAlreadyRead),
-		errors.Is(err, notify.ErrNotSent):
+		errors.Is(err, notify.ErrNotSent),
+		errors.Is(err, notify.ErrScheduledNotReached):
 		status = http.StatusConflict
 	case errors.Is(err, notify.ErrEmptyID),
 		errors.Is(err, notify.ErrEmptyRecipient),

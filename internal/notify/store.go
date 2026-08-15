@@ -28,6 +28,7 @@ var (
 	ErrAlreadySent     = errors.New("通知已发送，不能重复标记")
 	ErrNotSent         = errors.New("必须先标记已发送才能标记已读")
 	ErrAlreadyRead     = errors.New("通知已读，不能重复标记或回退")
+	ErrScheduledNotReached = errors.New("计划发送时间未到，不能标记已发送")
 )
 
 type Notification struct {
@@ -120,6 +121,11 @@ func (s *Store) MarkSent(id string, now time.Time) (*Notification, error) {
 		return nil, ErrAlreadySent
 	case StatusRead:
 		return nil, ErrAlreadyRead
+	}
+	// 计划发送时间未到时拒绝标记：只有当前时间到达或超过 ScheduleAt 才允许发送；
+	// 没有设置 ScheduleAt 的通知不受影响。
+	if n.ScheduleAt != nil && now.Before(*n.ScheduleAt) {
+		return nil, ErrScheduledNotReached
 	}
 	n.Status = StatusSent
 	n.SentAt = &now
